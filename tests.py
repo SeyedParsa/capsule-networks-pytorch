@@ -9,6 +9,7 @@ import time
 
 from losses import margin_loss, reconstruction_loss
 from models.capsnet import CapsNet
+from models.funcs import put_mask
 
 
 def test_cifar10():
@@ -153,12 +154,12 @@ def test_mnist():
         time_start = time.time()
         for i, data in enumerate(trainloader, 0):
             inputs, labels = data
+            masked_inputs = put_mask(inputs)
             labels_one_hot = torch.eye(10).index_select(dim=0, index=labels)
-            inputs, labels_one_hot, labels = Variable(inputs), Variable(labels_one_hot), Variable(labels)
             if CUDA:
-                inputs, labels_one_hot, labels = inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
+                masked_inputs, labels_one_hot, labels = masked_inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
             optimizer.zero_grad()
-            class_probs, recons = net(inputs, labels)
+            class_probs, recons = net(masked_inputs, labels)
             acc = torch.mean((labels == torch.max(class_probs, -1)[1]).double())
             train_acc += acc.data.item()
             loss = (margin_loss(class_probs, labels_one_hot) + 0.0005 * reconstruction_loss(recons, inputs))
@@ -169,11 +170,11 @@ def test_mnist():
         test_acc = 0.
         for j, data in enumerate(testloader, 0):
             inputs, labels = data
+            masked_inputs = put_mask(inputs)
             labels_one_hot = torch.eye(10).index_select(dim=0, index=labels)
-            inputs, labels_one_hot, labels = Variable(inputs), Variable(labels_one_hot), Variable(labels)
             if CUDA:
-                inputs, labels_one_hot, labels = inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
-            class_probs, recons = net(inputs)
+                masked_inputs, labels_one_hot, labels = masked_inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
+            class_probs, recons = net(masked_inputs)
             acc = torch.mean((labels == torch.max(class_probs, -1)[1]).double())
             test_acc += acc.data.item()
         print('[epoch {}/{} done in {:.2f}s] train_acc: {:.5f} test_acc: {:.5f}'.format(epoch + 1, n_epochs, (time.time() - time_start), train_acc/(i + 1), test_acc/(j + 1)))
