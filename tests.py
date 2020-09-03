@@ -157,7 +157,7 @@ def test_mnist():
             masked_inputs = put_mask(inputs)
             labels_one_hot = torch.eye(10).index_select(dim=0, index=labels)
             if CUDA:
-                masked_inputs, labels_one_hot, labels = masked_inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
+                inputs, masked_inputs, labels_one_hot, labels = inputs.cuda(), masked_inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
             optimizer.zero_grad()
             class_probs, recons = net(masked_inputs, labels)
             acc = torch.mean((labels == torch.max(class_probs, -1)[1]).double())
@@ -173,7 +173,7 @@ def test_mnist():
             masked_inputs = put_mask(inputs)
             labels_one_hot = torch.eye(10).index_select(dim=0, index=labels)
             if CUDA:
-                masked_inputs, labels_one_hot, labels = masked_inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
+                inputs, masked_inputs, labels_one_hot, labels = inputs.cuda(), masked_inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
             class_probs, recons = net(masked_inputs)
             acc = torch.mean((labels == torch.max(class_probs, -1)[1]).double())
             test_acc += acc.data.item()
