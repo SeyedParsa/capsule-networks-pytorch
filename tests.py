@@ -149,8 +149,9 @@ def test_mnist():
                                              shuffle=False)
     optimizer = Adam(net.parameters())
 
-    n_epochs = 10
+    n_epochs = 30
     print_every = 200 if CUDA else 2
+    display_every = 100
 
     for epoch in range(n_epochs):
         train_acc = 0.
@@ -178,7 +179,8 @@ def test_mnist():
             if CUDA:
                 inputs, masked_inputs, labels_one_hot, labels = inputs.cuda(), masked_inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
             class_probs, recons = net(masked_inputs)
-            display(inputs[0], masked_inputs[0], recons[0])
+            if (j+1) % display_every == 0:
+                display(inputs[0], masked_inputs[0], recons[0])
             acc = torch.mean((labels == torch.max(class_probs, -1)[1]).double())
             test_acc += acc.data.item()
         print('[epoch {}/{} done in {:.2f}s] train_acc: {:.5f} test_acc: {:.5f}'.format(epoch + 1, n_epochs, (time.time() - time_start), train_acc/(i + 1), test_acc/(j + 1)))
