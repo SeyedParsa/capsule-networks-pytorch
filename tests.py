@@ -35,27 +35,28 @@ def test_cifar10():
                                              shuffle=False)
     optimizer = Adam(net.parameters())
 
-    n_epochs = 1
+    n_epochs = 30
     print_every = 200 if CUDA else 2
+    display_every = 10
 
     for epoch in range(n_epochs):
         train_acc = 0.
         time_start = time.time()
-        # for i, data in enumerate(trainloader, 0):
-        #     inputs, labels = data
-        #     masked_inputs = put_mask(inputs)
-        #     labels_one_hot = torch.eye(10).index_select(dim=0, index=labels)
-        #     if CUDA:
-        #         masked_inputs, inputs, labels_one_hot, labels = masked_inputs.cuda(), inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
-        #     optimizer.zero_grad()
-        #     class_probs, recons = net(masked_inputs, labels)
-        #     acc = torch.mean((labels == torch.max(class_probs, -1)[1]).double())
-        #     train_acc += acc.data.item()
-        #     loss = (margin_loss(class_probs, labels_one_hot) + 0.0005 * reconstruction_loss(recons, inputs))
-        #     loss.backward()
-        #     optimizer.step()
-        #     if (i+1) % print_every == 0:
-        #         print('[epoch {}/{}, batch {}] train_loss: {:.5f}, train_acc: {:.5f}'.format(epoch + 1, n_epochs, i + 1, loss.data.item(), acc.data.item()))
+        for i, data in enumerate(trainloader, 0):
+            inputs, labels = data
+            masked_inputs = put_mask(inputs)
+            labels_one_hot = torch.eye(10).index_select(dim=0, index=labels)
+            if CUDA:
+                masked_inputs, inputs, labels_one_hot, labels = masked_inputs.cuda(), inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
+            optimizer.zero_grad()
+            class_probs, recons = net(masked_inputs, labels)
+            acc = torch.mean((labels == torch.max(class_probs, -1)[1]).double())
+            train_acc += acc.data.item()
+            loss = (margin_loss(class_probs, labels_one_hot) + 0.0005 * reconstruction_loss(recons, inputs))
+            loss.backward()
+            optimizer.step()
+            if (i+1) % print_every == 0:
+                print('[epoch {}/{}, batch {}] train_loss: {:.5f}, train_acc: {:.5f}'.format(epoch + 1, n_epochs, i + 1, loss.data.item(), acc.data.item()))
         test_acc = 0.
         for j, data in enumerate(testloader, 0):
             inputs, labels = data
@@ -66,6 +67,8 @@ def test_cifar10():
             if CUDA:
                 masked_inputs, inputs, labels_one_hot, labels = masked_inputs.cuda(), inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
             class_probs, recons = net(masked_inputs)
+            if (j+1) % display_every == 0:
+                display(inputs[0], masked_inputs[0], recons[0])
             acc = torch.mean((labels == torch.max(class_probs, -1)[1]).double())
             test_acc += acc.data.item()
         print('[epoch {}/{} done in {:.2f}s] train_acc: {:.5f} test_acc: {:.5f}'.format(epoch + 1, n_epochs, (time.time() - time_start), train_acc/(i + 1), test_acc/(j + 1)))
@@ -180,7 +183,7 @@ def test_mnist():
                 inputs, masked_inputs, labels_one_hot, labels = inputs.cuda(), masked_inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
             class_probs, recons = net(masked_inputs)
             if (j+1) % display_every == 0:
-                display(inputs[0], masked_inputs[0], recons[0])
+                display(inputs[0], masked_inputs[0], recons[0].cpu().detach())
             acc = torch.mean((labels == torch.max(class_probs, -1)[1]).double())
             test_acc += acc.data.item()
         print('[epoch {}/{} done in {:.2f}s] train_acc: {:.5f} test_acc: {:.5f}'.format(epoch + 1, n_epochs, (time.time() - time_start), train_acc/(i + 1), test_acc/(j + 1)))
@@ -191,6 +194,6 @@ def display(img, masked_img, recons_img):
     fig = plt.figure(figsize=(10, 10))
     for i in range(3):
         fig.add_subplot(1, 3, i+1)
-        plt.imshow(imgs[i].detach().permute(1, 2, 0))
+        plt.imshow(imgs[i].permute(1, 2, 0))
     plt.show()
 
