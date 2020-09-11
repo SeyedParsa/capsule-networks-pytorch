@@ -159,21 +159,21 @@ def test_mnist():
     for epoch in range(n_epochs):
         train_acc = 0.
         time_start = time.time()
-        # for i, data in enumerate(trainloader, 0):
-        #     inputs, labels = data
-        #     masked_inputs = put_mask(inputs)
-        #     labels_one_hot = torch.eye(10).index_select(dim=0, index=labels)
-        #     if CUDA:
-        #         inputs, masked_inputs, labels_one_hot, labels = inputs.cuda(), masked_inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
-        #     optimizer.zero_grad()
-        #     class_probs, recons = net(masked_inputs, labels)
-        #     acc = torch.mean((labels == torch.max(class_probs, -1)[1]).double())
-        #     train_acc += acc.data.item()
-        #     loss = (margin_loss(class_probs, labels_one_hot) + 0.0005 * reconstruction_loss(recons, inputs))
-        #     loss.backward()
-        #     optimizer.step()
-        #     if (i+1) % print_every == 0:
-        #         print('[epoch {}/{}, batch {}] train_loss: {:.5f}, train_acc: {:.5f}'.format(epoch + 1, n_epochs, i + 1, loss.data.item(), acc.data.item()))
+        for i, data in enumerate(trainloader, 0):
+            inputs, labels = data
+            masked_inputs = put_mask(inputs)
+            labels_one_hot = torch.eye(10).index_select(dim=0, index=labels)
+            if CUDA:
+                inputs, masked_inputs, labels_one_hot, labels = inputs.cuda(), masked_inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
+            optimizer.zero_grad()
+            class_probs, recons = net(masked_inputs, labels)
+            acc = torch.mean((labels == torch.max(class_probs, -1)[1]).double())
+            train_acc += acc.data.item()
+            loss = (margin_loss(class_probs, labels_one_hot) + 0.0005 * reconstruction_loss(recons, inputs))
+            loss.backward()
+            optimizer.step()
+            if (i+1) % print_every == 0:
+                print('[epoch {}/{}, batch {}] train_loss: {:.5f}, train_acc: {:.5f}'.format(epoch + 1, n_epochs, i + 1, loss.data.item(), acc.data.item()))
         test_acc = 0.
         for j, data in enumerate(testloader, 0):
             inputs, labels = data
