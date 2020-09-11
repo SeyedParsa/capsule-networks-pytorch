@@ -159,21 +159,21 @@ def test_mnist():
     for epoch in range(n_epochs):
         train_acc = 0.
         time_start = time.time()
-        for i, data in enumerate(trainloader, 0):
-            inputs, labels = data
-            masked_inputs = put_mask(inputs)
-            labels_one_hot = torch.eye(10).index_select(dim=0, index=labels)
-            if CUDA:
-                inputs, masked_inputs, labels_one_hot, labels = inputs.cuda(), masked_inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
-            optimizer.zero_grad()
-            class_probs, recons = net(masked_inputs, labels)
-            acc = torch.mean((labels == torch.max(class_probs, -1)[1]).double())
-            train_acc += acc.data.item()
-            loss = (margin_loss(class_probs, labels_one_hot) + 0.0005 * reconstruction_loss(recons, inputs))
-            loss.backward()
-            optimizer.step()
-            if (i+1) % print_every == 0:
-                print('[epoch {}/{}, batch {}] train_loss: {:.5f}, train_acc: {:.5f}'.format(epoch + 1, n_epochs, i + 1, loss.data.item(), acc.data.item()))
+        # for i, data in enumerate(trainloader, 0):
+        #     inputs, labels = data
+        #     masked_inputs = put_mask(inputs)
+        #     labels_one_hot = torch.eye(10).index_select(dim=0, index=labels)
+        #     if CUDA:
+        #         inputs, masked_inputs, labels_one_hot, labels = inputs.cuda(), masked_inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
+        #     optimizer.zero_grad()
+        #     class_probs, recons = net(masked_inputs, labels)
+        #     acc = torch.mean((labels == torch.max(class_probs, -1)[1]).double())
+        #     train_acc += acc.data.item()
+        #     loss = (margin_loss(class_probs, labels_one_hot) + 0.0005 * reconstruction_loss(recons, inputs))
+        #     loss.backward()
+        #     optimizer.step()
+        #     if (i+1) % print_every == 0:
+        #         print('[epoch {}/{}, batch {}] train_loss: {:.5f}, train_acc: {:.5f}'.format(epoch + 1, n_epochs, i + 1, loss.data.item(), acc.data.item()))
         test_acc = 0.
         for j, data in enumerate(testloader, 0):
             inputs, labels = data
@@ -182,7 +182,7 @@ def test_mnist():
             if CUDA:
                 inputs, masked_inputs, labels_one_hot, labels = inputs.cuda(), masked_inputs.cuda(), labels_one_hot.cuda(), labels.cuda()
             class_probs, recons = net(masked_inputs)
-            if (j+1) % display_every == 0:
+            if (j) % display_every == 0:
                 display(inputs[0].cpu(), masked_inputs[0].cpu(), recons[0].cpu().detach())
             acc = torch.mean((labels == torch.max(class_probs, -1)[1]).double())
             test_acc += acc.data.item()
@@ -194,6 +194,9 @@ def display(img, masked_img, recons_img):
     fig = plt.figure(figsize=(10, 10))
     for i in range(3):
         fig.add_subplot(1, 3, i+1)
-        plt.imshow(imgs[i].permute(1, 2, 0))
+        if imgs[i].shape[0] == 1:
+            plt.imshow(imgs[i][0])
+        else:
+            plt.imshow(imgs[i])
     plt.show()
 
