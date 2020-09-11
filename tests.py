@@ -38,7 +38,6 @@ def test_cifar10():
     n_epochs = 30
     print_every = 200 if CUDA else 2
     display_every = 10
-    print(len(testloader))
 
     for epoch in range(n_epochs):
         train_acc = 0.
@@ -198,6 +197,6 @@ def display(img, masked_img, recons_img):
         if imgs[i].shape[0] == 1:
             plt.imshow(imgs[i][0])
         else:
-            plt.imshow(imgs[i])
+            plt.imshow(imgs[i].permute(1, 2, 0))
     plt.show()
 
