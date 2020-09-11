@@ -18,8 +18,8 @@ def test_cifar10():
     net = CapsNet(8 * 8 * 32, [3, 32, 32])
     if CUDA:
         net.cuda()
-    print (net)
-    print ("# parameters: ", sum(param.numel() for param in net.parameters()))
+    print(net)
+    print("# parameters: ", sum(param.numel() for param in net.parameters()))
 
     transform = transforms.Compose(
         [transforms.ToTensor()])
@@ -60,8 +60,6 @@ def test_cifar10():
         test_acc = 0.
         for j, data in enumerate(testloader, 0):
             inputs, labels = data
-            img = inputs[0]
-            print(img.shape)
             masked_inputs = put_mask(inputs)
             labels_one_hot = torch.eye(10).index_select(dim=0, index=labels)
             if CUDA:
