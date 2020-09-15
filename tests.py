@@ -35,7 +35,7 @@ def test_cifar10():
                                              shuffle=False)
     optimizer = Adam(net.parameters())
 
-    n_epochs = 30
+    n_epochs = 200
     print_every = 200 if CUDA else 2
     display_every = 10
 
