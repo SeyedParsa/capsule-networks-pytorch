@@ -150,7 +150,7 @@ def test_mnist():
                                              shuffle=False)
     optimizer = Adam(net.parameters())
 
-    n_epochs = 30
+    n_epochs = 10
     print_every = 200 if CUDA else 2
     display_every = 100
 
